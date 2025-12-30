@@ -17,6 +17,7 @@ export const App: React.FC = () => {
   const [searchValue, setSearchValue] = useState('');
   const [filterValue, setFilterValue] = useState<FilterTodo>('all');
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     getTodos()
@@ -25,12 +26,16 @@ export const App: React.FC = () => {
         setAllTodos(todos);
       })
       .catch(() => {
-        throw new Error('Failed to load data!');
+        setErrorMessage('Failed to load data');
+      })
+      .finally(() => {
+        setTodosLoad(false);
       });
 
     return () => {
       setTodosLoad(true);
       setAllTodos([]);
+      setErrorMessage(null);
     };
   }, []);
 
@@ -52,30 +57,36 @@ export const App: React.FC = () => {
     <>
       <div className="section">
         <div className="container">
-          <div className="box">
-            <h1 className="title">Todos:</h1>
+          {errorMessage === null ? (
+            <div className="box">
+              <h1 className="title">Todos:</h1>
 
-            <div className="block">
-              <TodoFilter
-                inputValue={searchValue}
-                selectValue={filterValue}
-                changeInputValue={setSearchValue}
-                changeFilterValue={setFilterValue}
-              />
-            </div>
-
-            <div className="block">
-              {todosLoad ? (
-                <Loader />
-              ) : (
-                <TodoList
-                  todos={visibleTodos}
-                  changeSelectedTodo={setSelectedTodo}
-                  selectedTodo={selectedTodo}
+              <div className="block">
+                <TodoFilter
+                  inputValue={searchValue}
+                  selectValue={filterValue}
+                  changeInputValue={setSearchValue}
+                  changeFilterValue={setFilterValue}
                 />
-              )}
+              </div>
+
+              <div className="block">
+                {todosLoad ? (
+                  <Loader />
+                ) : (
+                  <TodoList
+                    todos={visibleTodos}
+                    changeSelectedTodo={setSelectedTodo}
+                    selectedTodo={selectedTodo}
+                  />
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="notification is-danger is-light">
+              {errorMessage}
+            </div>
+          )}
         </div>
       </div>
 
